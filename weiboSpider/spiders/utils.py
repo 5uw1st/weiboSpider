@@ -1,13 +1,17 @@
 # coding:utf-8
+
 import logging
-from json import loads, dumps
 from functools import wraps
+from lxml.html import etree
+from json import loads, dumps
+from re import compile as re_compile
 
 from requests import get as http_get, post as http_post
 
 from weiboSpider.data_type import HttpData
 
 default_logger = logging.getLogger(__name__)
+reg_blank = re_compile('\s+')
 
 
 def handle_exception(logger=None, default_val=None, show_error=True):
@@ -82,7 +86,6 @@ def http_request(url, method=None, headers=None, cookies=None, data=None, timeou
             method = HttpData.HTTP_METHOD_GET
         if not headers:
             headers = HttpData.HTTP_DEFAULT_HEADERS
-        response = None
         if method == HttpData.HTTP_METHOD_GET:
             response = http_get(url, headers=headers, cookies=cookies, timeout=timeout, verify=False)
         elif method == HttpData.HTTP_METHOD_POST:
@@ -101,3 +104,64 @@ def http_request(url, method=None, headers=None, cookies=None, data=None, timeou
     except Exception as e:
         logger.exception("请求失败: %s ---> %s" % (url, str(e)))
         return
+
+
+@handle_exception()
+def xpath_match(html, xpath, get_one=True, default=None):
+    """
+    XPATH匹配
+    :param html:
+    :param xpath:
+    :param get_one:
+    :param default:
+    :return:
+    """
+    if isinstance(html, str):
+        dom = etree.HTML(html)
+    else:
+        dom = html
+    res = dom.xpath(xpath)
+    if res and len(res) > 0:
+        if get_one:
+            return res[0]
+        else:
+            return res
+    elif default:
+        return default
+    else:
+        return
+
+
+@handle_exception()
+def reg_match(page, pattern, get_one=True, default=None):
+    """
+    正则匹配
+    :param page:
+    :param pattern:
+    :param get_one:
+    :param default:
+    :return:
+    """
+    if not get_one:
+        res = pattern.findall(page)
+    else:
+        res = pattern.search(page)
+        if res is not None:
+            res = res.group(1)
+    if res:
+        return res
+    elif default:
+        return default
+    else:
+        return
+
+
+@handle_exception()
+def is_match(page, pattern):
+    """
+    是否匹配
+    :param page:
+    :param pattern:
+    :return:
+    """
+    return pattern.search(page) is not None

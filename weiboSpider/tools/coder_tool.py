@@ -9,26 +9,26 @@ from weiboSpider.spiders.utils import handle_exception
 @handle_exception()
 def enb64(text):
     if isinstance(text, str):
-        text = text.decode()
+        text = text.encode()
     return b64encode(text)
 
 
 @handle_exception()
 def deb64(text):
     if isinstance(text, str):
-        text = text.decode()
+        text = text.encode()
     return b64decode(text)
 
 
 @handle_exception()
 def url_encode(text):
     if isinstance(text, str):
-        text = text.decode()
+        text = text.encode()
     return quote(text)
 
 
 @handle_exception()
 def url_decode(text):
     if isinstance(text, str):
-        text = text.decode()
+        text = text.encode()
     return unquote(text)
