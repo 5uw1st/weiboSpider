@@ -69,14 +69,15 @@ class MongodbManage(object):
         self.logger.info(msg)
         return uid_list
 
-    def select(self, query, to_list=True):
+    def select(self, query, projection=None, to_list=True):
         """
         查询数据
         :param query:
+        :param projection:
         :param to_list:
         :return:
         """
-        query_ret = self.collection.find(query)
+        query_ret = self.collection.find(query, projection=projection)
         count = query_ret.count()
         self.logger.info("--->成功查询到%s条数据" % count)
         if to_list:
@@ -120,8 +121,8 @@ if __name__ == '__main__':
         # data = [{"test1": "1234"}, {"test2": "9876"}]
         # mongo.insert(data)
         # mongo.insert(data, query={"test1": "1234"}, allow_repeat=False)
-        # ret = mongo.select({"test1": "1234"}, to_list=False)
-        # print(ret)
-        # mongo.update({"test1": "1234"}, {'$set': {'test1': 'MongoDB'}})
-        ret = mongo.delete({"test2": "qwqwqw"}, multi=True)
+        ret = mongo.select({"test1": "1234"}, to_list=False)
         print(ret)
+        # mongo.update({"test1": "1234"}, {'$set': {'test1': 'MongoDB'}})
+        # ret = mongo.delete({"test2": "qwqwqw"}, multi=True)
+        # print(ret)

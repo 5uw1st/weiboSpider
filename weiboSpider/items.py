@@ -92,7 +92,7 @@ class FollowInfoItem(Item):
     关注人信息
     """
     uid = Field()
-    fid = Field()
+    folid = Field()
     f_name = Field()
     f_uid = Field()
     f_from = Field()
