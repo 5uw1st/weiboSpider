@@ -1,7 +1,5 @@
 # coding:utf-8
 
-import logging
-from functools import wraps
 from lxml.html import etree
 from json import loads, dumps
 from re import compile as re_compile
@@ -9,39 +7,9 @@ from re import compile as re_compile
 from requests import get as http_get, post as http_post
 
 from weiboSpider.data_type import HttpData
+from weiboSpider.tools.utils import handle_exception
 
-default_logger = logging.getLogger(__name__)
 reg_blank = re_compile('\s+')
-
-
-def handle_exception(logger=None, default_val=None, show_error=True):
-    """
-    处理异常装饰器
-    :param logger:
-    :param default_val:
-    :param show_error:
-    :return:
-    """
-    if not logger:
-        logger = default_logger
-
-    def _handle(func):
-        @wraps(func)
-        def __handle(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                if default_logger is not None:
-                    logger.info("执行函数[%s]出错,返回默认值" % func.__name__)
-                    return default_val
-                err_msg = "执行函数{func}出错:{error}"
-                error = ""
-                if show_error:
-                    error = str(e)
-                err_msg = err_msg.format(func=func.__name__, error=error)
-                logger.exception(err_msg)
-        return __handle
-    return _handle
 
 
 @handle_exception()

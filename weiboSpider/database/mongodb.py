@@ -109,11 +109,15 @@ class MongodbManage(object):
         self.logger.info("--->数据总条数:%d, 成功删除条数: %d" % (ret["n"], ret["ok"]))
         return ret["n"] if ret["ok"] == 1 else 0
 
+    def close(self):
+        if self.client:
+            self.client.close()
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        self.close()
 
 
 if __name__ == '__main__':

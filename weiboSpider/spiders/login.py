@@ -6,9 +6,10 @@ from re import compile as re_compile
 from requests import session
 
 from weiboSpider.data_type import HttpData
-from weiboSpider.spiders.utils import http_request, default_logger, str_to_json, handle_exception, reg_match
+from weiboSpider.spiders.utils import http_request, str_to_json, reg_match
 from weiboSpider.tools.coder_tool import enb64, url_encode
 from weiboSpider.tools.rsa_tool import RsaUtil
+from weiboSpider.tools.utils import handle_exception, default_logger
 
 
 class WeiboLogin(object):

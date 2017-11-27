@@ -3,7 +3,7 @@
 from base64 import b64decode, b64encode
 from urllib.parse import quote, unquote
 
-from weiboSpider.spiders.utils import handle_exception
+from weiboSpider.tools.utils import handle_exception
 
 
 @handle_exception()

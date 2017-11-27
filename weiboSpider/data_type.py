@@ -9,9 +9,13 @@ class HttpData(object):
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
     }
 
-    def __init__(self):
-        pass
 
+class DbTable(object):
+    REDIS_UID = 1
+    REDIS_BID = 2
+    REDIS_CID = 3
+    REDIS_SID = 4
+    REDIS_FOLID = 5
+    REDIS_FANID = 6
+    REDIS_UID_LIST = 7
 
-if __name__ == '__main__':
-    print(HttpData.HTTP_METHOD_GET)

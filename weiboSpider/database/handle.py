@@ -2,10 +2,11 @@
 
 import logging
 
+from weiboSpider.data_type import DbTable
 from weiboSpider.database.mongodb import MongodbManage
 from weiboSpider.database.redisdb import RedisManage
-from weiboSpider.database.db_setting import MongodbName, DB_TABLE_RELATION
-from weiboSpider.spiders.utils import handle_exception
+from weiboSpider.database.db_setting import MongodbName, DB_TABLE_RELATION, RedisTable
+from weiboSpider.tools.utils import handle_exception
 from weiboSpider.tools.utils import get_timestamp
 
 default_logger = logging
@@ -51,6 +52,7 @@ class InitDataToRedis(object):
         db_relation = self._get_incidence_relation("USER_ID")
         mongodb_table = db_relation.get("MONGODB")
         redis_table = db_relation.get("REDIS")
+        redis_uid_list_table = db_relation.get("REDIS_UID_LIST")
         mongodb_conn = self.__get_mongodb_conn(table_name=mongodb_table)
         query = {}
         projection = {"uid": 1, "_id": 0}
@@ -59,6 +61,7 @@ class InitDataToRedis(object):
             for user in user_infos:
                 key = user.get("uid")
                 rpipe.hset(redis_table, key, get_timestamp())
+                rpipe.lpush(redis_uid_list_table, key)  # uid 队列
             rpipe.execute()
             uid_count = redis_conn.hlen(redis_table)
             self.logger.info("--->成功初始化用户UID数据条数为:%d" % uid_count)
@@ -227,3 +230,111 @@ class InitDataToRedis(object):
 
         self.logger.info("--->所有数据初始化成功")
         return True
+
+
+class OperationRedis(object):
+    """
+    redis数据处理
+    """
+    def __init__(self, redis_setting, logger=None):
+        self.redis_setting = redis_setting
+        self.logger = logger
+        self.redis = None
+
+    def __get_redis_conn(self):
+        if not self.redis:
+            with RedisManage(redis_setting=self.redis_setting, logger=self.logger) as r:
+                self.redis = r
+
+    def __is_key_exist(self, table_name, key):
+        """
+        判断key是否存在redis指定的表中
+        :param table_name:
+        :param key:
+        :return:
+        """
+        self.__get_redis_conn()
+        return self.redis.hexists(table_name, key) == 1
+
+    def add_key(self, table_type, key, value=None):
+        """
+        添加新key
+        :param table_type:
+        :param key:
+        :param value:
+        :return:
+        """
+        table_name = self.__get_table_name(table_type=table_type)
+        if self.__is_key_exist(table_name=table_name, key=key):
+            self.logger.info("表%s中已经存在该key:%s" % (table_name, key))
+            value = self.__get_key_value(table_name, key)
+        else:
+            self.__get_redis_conn()
+            if value is None:
+                value = get_timestamp()
+            self.redis.hset(table_name, key, value)
+            self.logger.info("向表%s中添加key%s成功 ---> %s" % (table_name, key, value))
+        return value
+
+    def __get_key_value(self, table_name, key):
+        """
+        获取指定key的值
+        :param table_name:
+        :param key:
+        :return:
+        """
+        self.__get_redis_conn()
+        val = self.redis.hget(table_name, key)
+        return val
+
+    def get_uid(self):
+        """
+        获取uid
+        :return:
+        """
+        self.__get_redis_conn()
+        table_name = RedisTable.REDIS_UID_LIST_INFO
+        uid = self.redis.rpop(table_name)
+        return uid
+
+    def add_uid(self, uid):
+        self.__get_redis_conn()
+        # 先尝试添加到uid表中
+        self.add_key(DbTable.REDIS_UID, key=uid)
+        # 再尝试添加到uid_list表中
+        table_name = RedisTable.REDIS_UID_LIST_INFO
+        is_exist = self.__is_key_exist(table_name=RedisTable.REDIS_UID_INFO, key=uid)
+        self.logger.info("该uid是否存在:%s" % str(is_exist))
+        if not is_exist:
+            self.redis.lpush(table_name, uid)
+
+    def __get_table_name(self, table_type):
+        """
+        获取redis表名
+        :param table_type:
+        :return:
+        """
+        table_name = None
+        if table_type == DbTable.REDIS_UID:
+            table_name = RedisTable.REDIS_UID_INFO
+        elif table_type == DbTable.REDIS_BID:
+            table_name = RedisTable.REDIS_BID_INFO
+        elif table_type == DbTable.REDIS_CID:
+            table_name = RedisTable.REDIS_CID_INFO
+        elif table_type == DbTable.REDIS_SID:
+            table_name = RedisTable.REDIS_SID_INFO
+        elif table_type == DbTable.REDIS_FOLID:
+            table_name = RedisTable.REDIS_FOLID_INFO
+        elif table_type == DbTable.REDIS_FANID:
+            table_name = RedisTable.REDIS_FANID_INFO
+        elif table_type == DbTable.REDIS_UID_LIST:
+            table_name = RedisTable.REDIS_UID_LIST_INFO
+        else:
+            pass
+        return table_name
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass

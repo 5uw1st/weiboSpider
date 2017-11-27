@@ -51,12 +51,13 @@ class RedisTable(object):
     REDIS_SID_INFO = "wb_sid"   # hset(uid_bid_sid, stime) --> userid_blogid_shareid
     REDIS_FOLID_INFO = "wb_folid"   # hset(uid_folid, stime) --> userid_followid
     REDIS_FANID_INFO = "wb_fanid"   # hset(uid_fanid, stime) --> userid_fanid
-
+    REDIS_UID_LIST_INFO = "wb_uid_list"  # lpush(uid) --> userid
 
 DB_TABLE_RELATION = {
     "USER_ID": {
         "MONGODB": MongodbTable.MONGODB_UID_INFO,
-        "REDIS": RedisTable.REDIS_UID_INFO
+        "REDIS": RedisTable.REDIS_UID_INFO,
+        "REDIS_UID_LIST": RedisTable.REDIS_UID_LIST_INFO
     },
     "BLOG_ID": {
         "MONGODB": MongodbTable.MONGODB_BLOG_INFO,
