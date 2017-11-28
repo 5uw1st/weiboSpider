@@ -1,10 +1,11 @@
 # coding:utf-8
-from scrapy import Request, FormRequest
-from scrapy.linkextractors import LinkExtractor
-from scrapy.spider import CrawlSpider, Rule
+
+from weiboSpider.items import UserInfoItem, BlogInfoItem, CommentInfoItem, \
+    ShareInfoItem, FollowInfoItem, FanInfoItem
+from weiboSpider.spiders.base import BaseSpider
 
 
-class WeiboSpider(CrawlSpider):
+class WeiboSpider(BaseSpider):
     """
     微博爬虫
     """
@@ -13,19 +14,21 @@ class WeiboSpider(CrawlSpider):
     allowed_domains = ['weibo.com']
     start_urls = ['https://weibo.com/login.php']
 
-    rules = (
-        Rule(LinkExtractor(allow=('category\.php',), deny=('subsection\.php',))),
-
-        Rule(LinkExtractor(allow=('item\.php',)), callback='parse_item'),
-    )
-
     def __init__(self, *args, **kwargs):
-        super(WeiboSpider).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-    def start_requests(self):
-        return [Request("http://www.zhihu.com/#signin", meta={'cookiejar': 1}, callback=self.post_login)]
-
-    def post_login(self, response):
+    def parse_user_info(self, response):
+        """
+        解析用户信息
+        :param response:
+        :return:
+        """
         pass
 
-
+    def parse_blog_info(self, response):
+        """
+        解析微博信息
+        :param response:
+        :return:
+        """
+        pass

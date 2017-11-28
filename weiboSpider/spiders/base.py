@@ -2,12 +2,14 @@
 
 from time import sleep
 
+# from scrapy.spiders import Spider
 # from scrapy.spidermiddlewares.httperror import HttpError
 # # from scrapt import Request
 # from twisted.internet.error import TimeoutError, TCPTimedOutError
 
 from weiboSpider.database.handle import OperationRedis
 from weiboSpider.data_type import DbTable
+from weiboSpider.spiders.login import WeiboLogin
 
 
 class BaseSpider(object):
@@ -27,6 +29,8 @@ class BaseSpider(object):
         self.sleep_time = 2
         self.logger = None
         self._cookies = None
+        self.__username = "12345678"
+        self.__password = "12345678"
         self.__oper_redis = OperationRedis(redis_setting=self.redis_setting, logger=self.logger)
 
     def start_request(self):
@@ -39,7 +43,7 @@ class BaseSpider(object):
             if uid:
                 user_url = "https://weibo.com/u/{uid}".format(uid=uid)
                 return user_url  #
-                # return Request(user_url, callback=self.parse, errback=self.error_back, dont_filter=True)
+                # return Request(user_url, callback=self.parse_user_info, errback=self.error_back, dont_filter=True)
             else:
                 sleep(self.sleep_time)
 
@@ -78,14 +82,17 @@ class BaseSpider(object):
         """
         pass
 
-    def crawl_error(self, uid, tell_msg=None):
+    def __get_login_cookies(self):
         """
-        抓取出错
-        :param uid:
-        :param tell_msg:
+        获取登录cookies
         :return:
         """
-        pass
+        weibo = WeiboLogin()
+        is_succ = weibo.login(username=self.__username, password=self.__password)
+        if is_succ:
+            self._cookies = weibo.cookies
+            return True
+        return False
 
     def _get_uid_from_redis(self):
         """

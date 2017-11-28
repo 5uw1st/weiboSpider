@@ -7,7 +7,7 @@ from re import compile as re_compile
 from requests import get as http_get, post as http_post
 
 from weiboSpider.data_type import HttpData
-from weiboSpider.tools.utils import handle_exception
+from weiboSpider.tools.utils import handle_exception, default_logger
 
 reg_blank = re_compile('\s+')
 
@@ -63,7 +63,7 @@ def http_request(url, method=None, headers=None, cookies=None, data=None, timeou
         else:
             logger.debug("暂不支持该请求类型 ---> %s" % url)
             return
-        if response.status_code == 200:
+        if 200 <= response.status_code < 400:
             logger.debug("请求成功: ---> %s" % url)
             return response
         else:
