@@ -133,3 +133,4 @@ def is_match(page, pattern):
     :return:
     """
     return pattern.search(page) is not None
+

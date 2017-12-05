@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from os import path as os_path
 # Scrapy settings for weiboSpider project
 #
 # For simplicity, this file contains only settings considered important or
@@ -8,6 +9,8 @@
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
+
+BASE_DIR = os_path.abspath(os_path.dirname(__file__))
 
 BOT_NAME = 'weiboSpider'
 
@@ -61,18 +64,18 @@ NEWSPIDER_MODULE = 'weiboSpider.spiders'
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'weiboSpider.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'weiboSpider.pipelines.WeibospiderPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
 # NOTE: AutoThrottle will honour the standard settings for concurrency and delay
 #AUTOTHROTTLE_ENABLED=True
 # The initial download delay
-#AUTOTHROTTLE_START_DELAY=5
+AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
-#AUTOTHROTTLE_MAX_DELAY=60
+AUTOTHROTTLE_MAX_DELAY = 60
 # Enable showing throttling stats for every response received:
 #AUTOTHROTTLE_DEBUG=False
 
@@ -83,3 +86,7 @@ NEWSPIDER_MODULE = 'weiboSpider.spiders'
 #HTTPCACHE_DIR='httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+LOG_ENABLED = True
+LOG_FILE = BASE_DIR + 'log/crawl.log'
+LOG_LEVEL = "INFO"

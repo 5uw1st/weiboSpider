@@ -23,7 +23,9 @@ class WeiboSpider(BaseSpider):
         :param response:
         :return:
         """
-        pass
+        item = UserInfoItem()
+        item["uid"] = ""
+        yield item
 
     def parse_blog_info(self, response):
         """

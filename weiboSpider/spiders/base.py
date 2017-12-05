@@ -2,10 +2,10 @@
 
 from time import sleep
 
-# from scrapy.spiders import Spider
-# from scrapy.spidermiddlewares.httperror import HttpError
-# # from scrapt import Request
-# from twisted.internet.error import TimeoutError, TCPTimedOutError
+from scrapy.spiders import Spider
+from scrapy.spidermiddlewares.httperror import HttpError
+# from scrapt import Request
+from twisted.internet.error import TimeoutError, TCPTimedOutError
 
 from weiboSpider.database.handle import OperationRedis
 from weiboSpider.data_type import DbTable
@@ -24,13 +24,15 @@ class BaseSpider(object):
     FANID_TABLE = DbTable.REDIS_FANID
     UID_LIST_TABLE = DbTable.REDIS_UID_LIST
 
-    def __init__(self, redis_setting):
+    def __init__(self, redis_setting, account_info):
         self.redis_setting = redis_setting
+        self.__account_info = account_info
         self.sleep_time = 2
         self.logger = None
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
+        }
         self._cookies = None
-        self.__username = "12345678"
-        self.__password = "12345678"
         self.__oper_redis = OperationRedis(redis_setting=self.redis_setting, logger=self.logger)
 
     def start_request(self):
@@ -42,8 +44,14 @@ class BaseSpider(object):
             uid = self._get_uid_from_redis()
             if uid:
                 user_url = "https://weibo.com/u/{uid}".format(uid=uid)
-                return user_url  #
-                # return Request(user_url, callback=self.parse_user_info, errback=self.error_back, dont_filter=True)
+                request = Request(
+                    user_url,
+                    headers=self.headers,
+                    cookies=self._cookies,
+                    callback=self.parse_user_info,
+                    errback=self.error_back,
+                    dont_filter=True)
+                return request
             else:
                 sleep(self.sleep_time)
 
@@ -88,7 +96,7 @@ class BaseSpider(object):
         :return:
         """
         weibo = WeiboLogin()
-        is_succ = weibo.login(username=self.__username, password=self.__password)
+        is_succ = weibo.login(self.__account_info.get("username"), self.__account_info.get("password"))
         if is_succ:
             self._cookies = weibo.cookies
             return True

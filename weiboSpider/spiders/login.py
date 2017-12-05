@@ -1,6 +1,5 @@
 # coding:utf-8
 
-from time import time
 from re import compile as re_compile
 
 from requests import session

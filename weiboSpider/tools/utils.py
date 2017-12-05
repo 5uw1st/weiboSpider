@@ -59,3 +59,26 @@ def get_timestamp(default_type=True):
         return str(int(time()))
     else:
         return str(int(time())*1000)
+
+
+def trim_all(text, opt_list=None):
+    """
+    去除空格换行等字符
+    :param text:
+    :param opt_list:
+    :return:
+    """
+    try:
+        if not isinstance(text, str):
+            return None
+        res = ""
+        default_list = ["\n", "\r\n", "\t", "&nbsp;", "\xa0"]
+        if opt_list is not None and isinstance(opt_list, list):
+            default_list += opt_list
+        for i in set(default_list):
+            res = text.replace(i, "")
+        res = reg_blank.sub('', res)
+        res = res.strip()
+        return res
+    except Exception as e:
+        return text
